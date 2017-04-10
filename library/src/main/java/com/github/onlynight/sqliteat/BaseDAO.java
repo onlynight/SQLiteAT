@@ -222,21 +222,21 @@ public class BaseDAO<T> extends SQLiteTableDAO<T> {
                                Cursor cursor, int index) throws IllegalAccessException,
             IllegalArgumentException {
         if ((Integer.TYPE == fieldType) || (Integer.class == fieldType)) {
-            field.set(entity, Integer.valueOf(cursor.getInt(index)));
+            field.set(entity, cursor.getInt(index));
         } else if (String.class == fieldType) {
             field.set(entity, cursor.getString(index));
         } else if ((Long.TYPE == fieldType) || (Long.class == fieldType)) {
-            field.set(entity, Long.valueOf(cursor.getLong(index)));
+            field.set(entity, cursor.getLong(index));
         } else if ((Float.TYPE == fieldType) || (Float.class == fieldType)) {
-            field.set(entity, Float.valueOf(cursor.getFloat(index)));
+            field.set(entity, cursor.getFloat(index));
         } else if ((Short.TYPE == fieldType) || (Short.class == fieldType)) {
-            field.set(entity, Short.valueOf(cursor.getShort(index)));
+            field.set(entity, cursor.getShort(index));
         } else if ((Double.TYPE == fieldType) || (Double.class == fieldType)) {
-            field.set(entity, Double.valueOf(cursor.getDouble(index)));
+            field.set(entity, cursor.getDouble(index));
         } else if (Character.TYPE == fieldType) {
             String fieldValue = cursor.getString(index);
             if ((fieldValue != null) && (fieldValue.length() > 0)) {
-                field.set(entity, Character.valueOf(fieldValue.charAt(0)));
+                field.set(entity, fieldValue.charAt(0));
             }
         }
     }

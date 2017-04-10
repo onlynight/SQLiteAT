@@ -23,11 +23,11 @@ import java.util.Set;
  * @author onlynight
  * @Class if table has @Table annotation , then the helper will help the class
  * create a sql string to create a table
- * @Params if params has the @Colum annotation , then load the annotation's
+ * @Params if params has the @Column annotation , then load the annotation's
  * field. if not , the help will use all the fields to create the table
  * by default.
  * <p>
- * the tablehelper will help you to create a sql.
+ * the table helper will help you to create a sql.
  * @createTable
  */
 public class SQLiteTableHelper implements SQLiteUtils {
@@ -94,7 +94,7 @@ public class SQLiteTableHelper implements SQLiteUtils {
             } else {
                 tableName = model.getSimpleName();
             }
-            List<PrimaryKey> pKeys = getPrimairyKeys(model);
+            List<PrimaryKey> pKeys = getPrimaryKeys(model);
             tables.add(createTableSQL(tableName, model, pKeys));
 
         } else if (model.isAnnotationPresent(Tables.class)) { // if class has
@@ -103,7 +103,7 @@ public class SQLiteTableHelper implements SQLiteUtils {
             Tables aTables = model.getAnnotation(Tables.class);
             Table[] annotations = aTables.value();
             for (Table table : annotations) {
-                List<PrimaryKey> pKeys = getPrimairyKeys(model);
+                List<PrimaryKey> pKeys = getPrimaryKeys(model);
                 tables.add(createTableSQL(table.value(), model, pKeys));
             }
         } else { // if class has no annotation
@@ -121,7 +121,7 @@ public class SQLiteTableHelper implements SQLiteUtils {
          * if the table has the composite primary key, it means that the table
          * has no primary key.
          */
-        List<PrimaryKey> fks = getPrimairyKeys(model);
+        List<PrimaryKey> fks = getPrimaryKeys(model);
         if (fks != null) {
             ids = new HashSet<Field>();
             for (PrimaryKey primaryKey : fks) {
@@ -172,17 +172,16 @@ public class SQLiteTableHelper implements SQLiteUtils {
         StringBuilder sql = new StringBuilder();
         List<ColumnAndAnnotation> columns = getAllColumn(getAllFields(model));
 
-        sql.append(SQLITE_KEYWORD_CREATE + " " + SQLITE_KEYWORD_TABLE + " "
-                + tableName + " (");
+        sql.append(SQLITE_CMD_CREATE_TABLE + " ").append(tableName).append(" (");
         if (primaryKeys != null) { // if the table has the composite primary
             // keys, the create primary key
             for (ColumnAndAnnotation column : columns) {
-                sql.append(createColumSQL(column, true));
+                sql.append(createColumnSQL(column, true));
             }
             sql.append(createPrimaryKeys(primaryKeys));
         } else {
             for (ColumnAndAnnotation column : columns) {
-                sql.append(createColumSQL(column, false));
+                sql.append(createColumnSQL(column, false));
             }
         }
         sql.deleteCharAt(sql.length() - 1);
@@ -203,7 +202,7 @@ public class SQLiteTableHelper implements SQLiteUtils {
         return addBlank(sql.toString());
     }
 
-    private static List<PrimaryKey> getPrimairyKeys(Class<?> model) {
+    private static List<PrimaryKey> getPrimaryKeys(Class<?> model) {
         List<PrimaryKey> keys = null;
 
         if (model.isAnnotationPresent(Table.class)) {
@@ -268,7 +267,7 @@ public class SQLiteTableHelper implements SQLiteUtils {
          * if the table has the composite primary key, it means that the table
          * has no primary key.
          */
-        List<PrimaryKey> fks = getPrimairyKeys(model);
+        List<PrimaryKey> fks = getPrimaryKeys(model);
         if (fks != null) {
             return false;
         }
@@ -302,7 +301,7 @@ public class SQLiteTableHelper implements SQLiteUtils {
         return false;
     }
 
-    public static String getColumType(Class<?> fieldType) {
+    public static String getColumnType(Class<?> fieldType) {
 
         if (String.class == fieldType) {
             return SQLITE_DATA_TYPE_TEXT;
@@ -386,8 +385,8 @@ public class SQLiteTableHelper implements SQLiteUtils {
         return tableModels;
     }
 
-    private static String createColumSQL(ColumnAndAnnotation column,
-                                         boolean compositePrimaryKey) {
+    private static String createColumnSQL(ColumnAndAnnotation column,
+                                          boolean compositePrimaryKey) {
 
         StringBuilder columnSql = new StringBuilder();
 
@@ -395,11 +394,11 @@ public class SQLiteTableHelper implements SQLiteUtils {
         // primary key
         if ((column.getAnnotation() instanceof Id)
                 && !compositePrimaryKey) {
-            String idCloumn = column.getField().getName() + " "
-                    + getColumType(column.getField().getType()) + " "
+            String idColumn = column.getField().getName() + " "
+                    + getColumnType(column.getField().getType()) + " "
                     + SQLITE_CONSTRAINT_PRIMARY_KEY + " "
                     + SQLITE_KEYWORD_AUTOINCREASEMENT + ",";
-            columnSql.append(idCloumn);
+            columnSql.append(idColumn);
         }
 
         // if the field has named DEFAULT_ID_COLUMN_NAME and the table has no
@@ -407,18 +406,18 @@ public class SQLiteTableHelper implements SQLiteUtils {
         else if ((column.getAnnotation() instanceof Column)
                 && ((Column) column.getAnnotation()).value().equals(
                 DEFAULT_ID_COLUMN_NAME) && !compositePrimaryKey) {
-            String idCloumn = DEFAULT_ID_COLUMN_NAME + " "
-                    + getColumType(column.getField().getType()) + " "
+            String idColumn = DEFAULT_ID_COLUMN_NAME + " "
+                    + getColumnType(column.getField().getType()) + " "
                     + SQLITE_CONSTRAINT_PRIMARY_KEY + " "
                     + SQLITE_KEYWORD_AUTOINCREASEMENT + ",";
-            columnSql.append(idCloumn);
+            columnSql.append(idColumn);
         }
 
         // else the field has the @Column annotation
         else if (column.getAnnotation() instanceof Column) {
 
             String col = column.getField().getName() + " "
-                    + getColumType(column.getField().getType());
+                    + getColumnType(column.getField().getType());
             columnSql.append(addBlank(col));
 
             Column annotation = (Column) column.getAnnotation();
